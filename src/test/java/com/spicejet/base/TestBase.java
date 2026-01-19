@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.time.Duration;
 import java.util.Properties;
 
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -65,4 +66,41 @@ public class TestBase {
 	}
 	
 	//method to retry clicking the element incase the element does not load. use attempts
+	//prevention of stale element
+	public void clickOn(WebElement element) {
+		int attempts = 0;
+		while(attempts<3) {
+			try {
+				waitForClickability(element);
+				element.click();
+				break;
+			} catch (StaleElementReferenceException e) {
+				attempts++;
+				System.out.println("Element was stale. Retrying...");
+			} catch (Exception e) {
+				System.out.println("Max attempts reaced.");
+			}
+		}
+	}
+	
+	//method to enter text in input field with attempts to prevent stale element exception
+	public void sendText(WebElement element, String text) {
+		int attempts = 0;
+		while(attempts<3) {
+			try {
+				waitForVisibility(element);
+				element.click();
+				element.sendKeys(Keys.CONTROL + "a");
+				element.sendKeys(Keys.BACK_SPACE);
+				element.sendKeys(text);
+				break;
+			} catch (StaleElementReferenceException e) {
+				System.out.println("Element wsa stale. Retrying...");
+			} catch(Exception e) {
+				System.out.println("Max attempts reached.");
+			}
+		}
+	}
+	
+	//method 
 }
