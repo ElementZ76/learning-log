@@ -1,0 +1,13 @@
+[
+  {
+    "origin": "DEL",
+    "destination": "BLR",
+    "departureDate": "Today", 
+    "passengers": {
+      "adults": 2,
+      "children": 0,
+      "infants": 1
+    },
+    "currency": "INR"
+  }
+]

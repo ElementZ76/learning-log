@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.time.Duration;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -18,6 +20,10 @@ public class TestBase {
 	public static WebDriver driver;
 	public static WebDriverWait wait;
 	public static Properties prop;
+	public static Logger log = LogManager.getLogger(TestBase.class);
+	
+//	implict wait for 10
+//	WebDriverWait waitFor10 = new WebDriverWait(driver, Duration.ofSeconds(10));
 	
 	//method to initialize the config file
 	public TestBase() {
@@ -49,6 +55,8 @@ public class TestBase {
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
 		driver.manage().deleteAllCookies();
 		driver.get(prop.getProperty("url"));
+		log.info("Launching Browser: " + prop.getProperty("browser"));
+        log.info("Navigating to URL: " + prop.getProperty("url"));
 	}
 	
 	//wait for element to be visible
@@ -78,7 +86,7 @@ public class TestBase {
 				attempts++;
 				System.out.println("Element was stale. Retrying...");
 			} catch (Exception e) {
-				System.out.println("Max attempts reaced.");
+				System.out.println("Max attempts reached.");
 			}
 		}
 	}
@@ -95,12 +103,23 @@ public class TestBase {
 				element.sendKeys(text);
 				break;
 			} catch (StaleElementReferenceException e) {
-				System.out.println("Element wsa stale. Retrying...");
+				System.out.println("Element was stale. Retrying...");
 			} catch(Exception e) {
 				System.out.println("Max attempts reached.");
 			}
 		}
 	}
 	
-	//method 
+	//method to wait for element to disappear
+	public void invisibilityOfElement(WebElement element) {
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+		wait.until(ExpectedConditions.invisibilityOf(element));
+	}
+	
+	//t5eardown 
+	public void tearDown() {
+		if(driver!=null) {
+			driver.quit();
+		}
+	}
 }
