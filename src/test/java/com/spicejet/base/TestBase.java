@@ -28,7 +28,7 @@ public class TestBase {
 	//method to initialize the config file
 	public TestBase() {
 		try {
-			Properties prop = new Properties();
+			prop = new Properties();
 			FileInputStream ip = new FileInputStream("src/test/resources/config.properties");
 			prop.load(ip);
 		} catch (Exception e) {
@@ -54,9 +54,9 @@ public class TestBase {
 		driver.manage().window().maximize();
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
 		driver.manage().deleteAllCookies();
-		driver.get(prop.getProperty("url"));
+//		driver.get(prop.getProperty("url"));
 		log.info("Launching Browser: " + prop.getProperty("browser"));
-        log.info("Navigating to URL: " + prop.getProperty("url"));
+//        log.info("Navigating to URL: " + prop.getProperty("url"));
 	}
 	
 	//wait for element to be visible

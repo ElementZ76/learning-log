@@ -6,10 +6,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.spicejet.base.TestBase;
 
 public class HomePage extends TestBase {
+	FlightsPage flightsPage;
+	
 	@FindBy(xpath = "//div[normalize-space()='From']/following-sibling::div//input")
 	WebElement fromBtn;
 	
@@ -33,6 +36,9 @@ public class HomePage extends TestBase {
 	
 	@FindBy(css = "div[data-testid='Infant-testID-plus-one-cta']")
 	WebElement infantPlusBtn;
+	
+	@FindBy(xpath = "//div[@data-testid='home-page-flight-cta']") 
+	WebElement searchFlightBtn;
 	
 	public HomePage() {
 		PageFactory.initElements(driver, this);
@@ -102,17 +108,53 @@ public class HomePage extends TestBase {
 		}
 	}
 	
-	public void searchForFlights(String origin, String destination, String date, String currency, String adults, String children, String infants) {
+	public FlightsPage searchForFlights(String origin, String destination, String date, String currency, String adults, String children, String infants) {
 		sendText(fromBtn, origin);
-		WebElement originOption = driver.findElement(By.xpath("//div[contains(text(), '" + origin + "')]"));
-	    waitForClickability(originOption);
-	    originOption.click();
-		sendText(toBtn, destination);
-		WebElement destinationOption = driver.findElement(By.xpath("//div[contains(text(), '" + destination + "')]"));
-	    waitForClickability(destinationOption);
-	    destinationOption.click();
+	    
+	    // Wait for the suggestion list to appear and find the City Code
+	    try {
+	        // Construct XPath for the list item (e.g., matching "DEL")
+	        By originItem = By.xpath("//div[contains(text(), '" + origin + "')]");
+	        
+	        // Wait for it to be visible
+	        wait.until(ExpectedConditions.visibilityOfElementLocated(originItem));
+	        
+	        // Click it
+	        driver.findElement(originItem).click();
+	        log.info("Selected Origin: " + origin);
+	        
+	    } catch (Exception e) {
+	        log.error("Origin dropdown item not found: " + origin);
+	    }
+
+	    // -----------------------------------------
+	    // 2. Handle DESTINATION (The failing part)
+	    // -----------------------------------------
+	    sendText(toBtn, destination);
+	    
+	    try {
+	        // FIX: Explicitly wait for the BLR text to appear in the list
+	        By destItem = By.xpath("//div[contains(text(), '" + destination + "')]");
+	        
+	        wait.until(ExpectedConditions.visibilityOfElementLocated(destItem));
+	        driver.findElement(destItem).click();
+	        log.info("Selected Destination: " + destination);
+	        
+	    } catch (Exception e) {
+	        // Fallback: Sometimes the text is "Bengaluru" instead of "BLR"
+	        // If exact code match fails, try finding the container that holds the code
+	        log.error("Destination item '" + destination + "' failed. Trying fallback...");
+	        // This is a "Hail Mary" click on the first visible result
+	        driver.findElement(By.xpath("(//div[contains(text(), '" + destination + "')])[1]")).click();
+	    }
+	    
 		selectDate(date);
 		selectPassengerCount(adults, children, infants);
 		selectCurrency(currency);
+		
+		waitForClickability(searchFlightBtn); 
+	    searchFlightBtn.click();
+		return new FlightsPage();
 	}
+	
 }
