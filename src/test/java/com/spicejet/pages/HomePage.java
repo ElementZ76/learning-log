@@ -3,7 +3,9 @@ package com.spicejet.pages;
 import java.util.NoSuchElementException;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -44,26 +46,80 @@ public class HomePage extends TestBase {
 		PageFactory.initElements(driver, this);
 	}
 	
-	public void selectDate(String date) {
-		if(date.equalsIgnoreCase("Today")) {
-			date = String.valueOf(java.time.LocalDate.now().getDayOfMonth());
-		}
+	public void selectDate(Integer date) {
+//		if(date.equalsIgnoreCase("Today")) {
+//			date = String.valueOf(java.time.LocalDate.now().getDayOfMonth());
+//		}
 		
-		String dynamicXpath = "//div[contains(@data-testid, 'undefined-calendar-day') and contains(text(), '" + date + "')]";
+		String dynamicXpath = "//div[contains(@class, 'css-76zvg2') and contains(., '" + date + "')]";
+		
+//		try {
+//			waitForVisibility(calendarContainer);
+//			log.info("Calendar is visible");
+//			WebElement dateToClick = driver.findElement(By.xpath(dynamicXpath));
+//			dateToClick.click();
+//			log.info("selected date:" + date);
+//			Actions actions = new Actions(driver);
+//			actions.sendKeys(Keys.ESCAPE).perform();
+//			log.info("Pressed ESC to close calendar");
+//			// Wait for the date picker to close after selecting the date
+//			invisibilityOfElement(calendarContainer);
+//			log.info("Date picker closed successfully");
+//		} catch (Exception e) {
+//			log.error("Error selecting date: " + e.getMessage());
+//			throw new RuntimeException("Failed to select date", e);
+//		}
+//	}
+		
 		
 		try {
-			WebElement dateToClick = driver.findElement(By.xpath(dynamicXpath));
+			// Wait for calendar to be visible first
+			wait.until(ExpectedConditions.visibilityOf(calendarContainer));
+			log.info("Calendar is visible");
+			
+			// Find and click the date
+			WebElement dateToClick = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(dynamicXpath)));
 			dateToClick.click();
-			log.info("selected date:" + date);
+			log.info("Selected date: " + date);
+			
+			// CRITICAL FIX: For one-way trips, SpiceJet calendar doesn't auto-close
+			// We need to manually close it by clicking outside or pressing ESC
+			
+			// Method 1: Press ESC key to close calendar
+			Actions actions = new Actions(driver);
+			actions.sendKeys(Keys.ENTER).perform();
+			log.info("Pressed ESC to close calendar");
+			
+			// Wait a bit for calendar to close
+			Thread.sleep(800);
+			
+			// Verify calendar is closed (with reduced timeout since we forced it)
+			try {
+				wait.until(ExpectedConditions.invisibilityOf(calendarContainer));
+				log.info("Date picker closed successfully");
+			} catch (Exception e) {
+				// If ESC didn't work, try clicking on passengers dropdown to force close
+				log.warn("ESC didn't close calendar, trying to click elsewhere");
+				passengersDropdown.click();
+				Thread.sleep(500);
+				passengersDropdown.click(); // Click again to close it
+				Thread.sleep(500);
+				log.info("Closed calendar by clicking passenger dropdown");
+			}
+			
 		} catch (NoSuchElementException e) {
-			log.error("date" + date + "not found in current month");
+			log.error("Date " + date + " not found in current month");
 			throw e;
+		} catch (Exception e) {
+			log.error("Error selecting date: " + e.getMessage());
+			throw new RuntimeException("Failed to select date", e);
 		}
-	}
+}
 	
 	public void selectPassengerCount(String adults, String children, String infants) {
 		waitForClickability(passengersDropdown);
 		passengersDropdown.click();
+		log.info("Opened passenger dropdown");
 		try {
 			int adultCountClicks = Integer.parseInt(adults) - 1;
 			int childCountClicks = Integer.parseInt(children);
@@ -74,20 +130,25 @@ public class HomePage extends TestBase {
 				adultPlusBtn.click();
 			}
 			
+			log.info("Added " + adultCountClicks + " additional adults");
+			
 			for(int i = 0; i<childCountClicks; i++) {
 				waitForClickability(childrenPlusBtn);
 				childrenPlusBtn.click();
 			}
+			
+			log.info("Added " + childCountClicks + " children");
 			
 			for(int i = 0; i<infantCountClicks; i++) {
 				waitForClickability(infantPlusBtn);
 				infantPlusBtn.click();
 			}
 			
-//			log.info("Added '" + infantCount + "' infants");
+			log.info("Added '" + infantCountClicks + "' infants");
 			
 		} catch (NoSuchElementException e) {
-			log.error("Could not find element");
+			log.error("Error selecting passengers");
+			throw e;
 		}
 	}
 	
@@ -108,45 +169,70 @@ public class HomePage extends TestBase {
 		}
 	}
 	
-	public FlightsPage searchForFlights(String origin, String destination, String date, String currency, String adults, String children, String infants) {
-		sendText(fromBtn, origin);
-	    
-	    // Wait for the suggestion list to appear and find the City Code
-	    try {
-	        // Construct XPath for the list item (e.g., matching "DEL")
-	        By originItem = By.xpath("//div[contains(text(), '" + origin + "')]");
-	        
-	        // Wait for it to be visible
-	        wait.until(ExpectedConditions.visibilityOfElementLocated(originItem));
-	        
-	        // Click it
-	        driver.findElement(originItem).click();
-	        log.info("Selected Origin: " + origin);
-	        
-	    } catch (Exception e) {
-	        log.error("Origin dropdown item not found: " + origin);
-	    }
-
-	    // -----------------------------------------
-	    // 2. Handle DESTINATION (The failing part)
-	    // -----------------------------------------
-	    sendText(toBtn, destination);
-	    
-	    try {
-	        // FIX: Explicitly wait for the BLR text to appear in the list
-	        By destItem = By.xpath("//div[contains(text(), '" + destination + "')]");
-	        
-	        wait.until(ExpectedConditions.visibilityOfElementLocated(destItem));
-	        driver.findElement(destItem).click();
-	        log.info("Selected Destination: " + destination);
-	        
-	    } catch (Exception e) {
-	        // Fallback: Sometimes the text is "Bengaluru" instead of "BLR"
-	        // If exact code match fails, try finding the container that holds the code
-	        log.error("Destination item '" + destination + "' failed. Trying fallback...");
-	        // This is a "Hail Mary" click on the first visible result
-	        driver.findElement(By.xpath("(//div[contains(text(), '" + destination + "')])[1]")).click();
-	    }
+	// method to keyboard select airports
+	private void selectFromAirpotKeyboard(WebElement inputField, String airportCode, String fieldName) {
+		try {
+			//upgrade below method to using sendtext once i confirm this works
+			waitForClickability(inputField);
+			inputField.click();
+			log.info("Clicked" + fieldName + "field");
+			inputField.clear();
+			inputField.sendKeys(airportCode);
+			log.info("Typed" + fieldName + ": " + airportCode);
+			Thread.sleep(1500);
+			inputField.sendKeys(Keys.ARROW_DOWN);
+			inputField.sendKeys(Keys.ENTER);
+			inputField.sendKeys(Keys.ENTER);
+			log.info("Selected " + fieldName + " using keyboard navigation: " + airportCode);
+		} catch (InterruptedException e) {
+			        log.error("Thread interrupted while selecting " + fieldName);
+			        Thread.currentThread().interrupt();
+			        throw new RuntimeException("Selection interrupted", e);
+			    } catch (Exception e) {
+			        log.error("Failed to select " + fieldName + ": " + e.getMessage());
+			        throw new RuntimeException("Failed to select " + fieldName, e);
+			    }
+}
+	
+	private void selectToAirpotKeyboard(WebElement inputField, String airportCode, String fieldName) {
+		try {
+			//upgrade below method to using sendtext once i confirm this works
+			waitForClickability(inputField);
+//			inputField.click();
+//			log.info("Clicked" + fieldName + "field");
+//			inputField.clear();
+			inputField.sendKeys(airportCode);
+			log.info("Typed" + fieldName + ": " + airportCode);
+			Thread.sleep(1500);
+			inputField.sendKeys(Keys.ARROW_DOWN);
+			inputField.sendKeys(Keys.ENTER);
+			inputField.sendKeys(Keys.ENTER);
+			log.info("Selected " + fieldName + " using keyboard navigation: " + airportCode);
+		} catch (InterruptedException e) {
+			        log.error("Thread interrupted while selecting " + fieldName);
+			        Thread.currentThread().interrupt();
+			        throw new RuntimeException("Selection interrupted", e);
+			    } catch (Exception e) {
+			        log.error("Failed to select " + fieldName + ": " + e.getMessage());
+			        throw new RuntimeException("Failed to select " + fieldName, e);
+			    }
+}
+	
+	
+	public FlightsPage searchForFlights(String origin, String destination, Integer date, String currency, String adults, String children, String infants) {
+		try {
+			log.info("Selecting origin");
+			selectFromAirpotKeyboard(fromBtn, origin, "Origin");
+		} catch (Exception e) {
+			log.info("keyboard method failed");
+		}
+		
+		try {
+			log.info("Selecting destination");
+			selectToAirpotKeyboard(toBtn, destination, "Destination");
+		} catch (Exception e) {
+			log.info("keyboard method failed");
+		}
 	    
 		selectDate(date);
 		selectPassengerCount(adults, children, infants);

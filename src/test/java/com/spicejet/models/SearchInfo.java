@@ -3,7 +3,7 @@ package com.spicejet.models;
 public class SearchInfo {
     private String origin;
     private String destination;
-    private String departureDate;
+    private Integer departureDate;
     private String currency;
 
     private String adults;
@@ -18,8 +18,8 @@ public class SearchInfo {
     public String getDestination() { return destination; }
     public void setDestination(String destination) { this.destination = destination; }
 
-    public String getDepartureDate() { return departureDate; }
-    public void setDepartureDate(String departureDate) { this.departureDate = departureDate; }
+    public Integer getDepartureDate() { return departureDate; }
+    public void setDepartureDate(Integer departureDate) { this.departureDate = departureDate; }
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }

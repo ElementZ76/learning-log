@@ -55,6 +55,7 @@ public class TestBase {
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
 		driver.manage().deleteAllCookies();
 //		driver.get(prop.getProperty("url"));
+		wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 		log.info("Launching Browser: " + prop.getProperty("browser"));
 //        log.info("Navigating to URL: " + prop.getProperty("url"));
 	}

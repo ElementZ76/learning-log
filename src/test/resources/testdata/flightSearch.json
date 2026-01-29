@@ -1,8 +1,8 @@
 [
   {
     "origin": "DEL",
-    "destination": "BLR",
-    "departureDate": "Today",
+    "destination": "MAA",
+    "departureDate": 25,
     "currency": "INR",
     "adults": "2",
     "children": "0",
