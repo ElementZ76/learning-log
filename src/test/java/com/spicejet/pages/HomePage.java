@@ -42,6 +42,9 @@ public class HomePage extends TestBase {
 	@FindBy(xpath = "//div[@data-testid='home-page-flight-cta']") 
 	WebElement searchFlightBtn;
 	
+	@FindBy(xpath = "//div[@data-testid='Flights-horizontal-nav-tabs']")
+	WebElement flightsBtn;
+	
 	public HomePage() {
 		PageFactory.initElements(driver, this);
 	}
@@ -100,11 +103,9 @@ public class HomePage extends TestBase {
 			} catch (Exception e) {
 				// If ESC didn't work, try clicking on passengers dropdown to force close
 				log.warn("ESC didn't close calendar, trying to click elsewhere");
-				passengersDropdown.click();
+				flightsBtn.click();
 				Thread.sleep(500);
-				passengersDropdown.click(); // Click again to close it
-				Thread.sleep(500);
-				log.info("Closed calendar by clicking passenger dropdown");
+				log.info("Closed calendar by clicking fligthsbtn");
 			}
 			
 		} catch (NoSuchElementException e) {
@@ -180,9 +181,9 @@ public class HomePage extends TestBase {
 			inputField.sendKeys(airportCode);
 			log.info("Typed" + fieldName + ": " + airportCode);
 			Thread.sleep(1500);
-			inputField.sendKeys(Keys.ARROW_DOWN);
-			inputField.sendKeys(Keys.ENTER);
-			inputField.sendKeys(Keys.ENTER);
+//			inputField.sendKeys(Keys.ARROW_DOWN);
+//			inputField.sendKeys(Keys.ENTER);
+//			inputField.sendKeys(Keys.ENTER);
 			log.info("Selected " + fieldName + " using keyboard navigation: " + airportCode);
 		} catch (InterruptedException e) {
 			        log.error("Thread interrupted while selecting " + fieldName);
@@ -204,14 +205,14 @@ public class HomePage extends TestBase {
 			inputField.sendKeys(airportCode);
 			log.info("Typed" + fieldName + ": " + airportCode);
 			Thread.sleep(1500);
-			inputField.sendKeys(Keys.ARROW_DOWN);
-			inputField.sendKeys(Keys.ENTER);
-			inputField.sendKeys(Keys.ENTER);
+//			inputField.sendKeys(Keys.ARROW_DOWN);
+//			inputField.sendKeys(Keys.ENTER);
+//			inputField.sendKeys(Keys.ENTER);
 			log.info("Selected " + fieldName + " using keyboard navigation: " + airportCode);
-		} catch (InterruptedException e) {
-			        log.error("Thread interrupted while selecting " + fieldName);
-			        Thread.currentThread().interrupt();
-			        throw new RuntimeException("Selection interrupted", e);
+//		} catch (InterruptedException e) {
+//			        log.error("Thread interrupted while selecting " + fieldName);
+//			        Thread.currentThread().interrupt();
+//			        throw new RuntimeException("Selection interrupted", e);
 			    } catch (Exception e) {
 			        log.error("Failed to select " + fieldName + ": " + e.getMessage());
 			        throw new RuntimeException("Failed to select " + fieldName, e);
@@ -240,6 +241,7 @@ public class HomePage extends TestBase {
 		
 		waitForClickability(searchFlightBtn); 
 	    searchFlightBtn.click();
+	    log.info("Clicked search flights button");
 		return new FlightsPage();
 	}
 	

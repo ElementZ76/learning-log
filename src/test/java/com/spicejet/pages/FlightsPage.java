@@ -14,7 +14,9 @@ public class FlightsPage extends TestBase{
 		PageFactory.initElements(driver, this);
 	}
 	
-	public boolean isFlightHeaderDisplayed() {
+	public boolean isFlightHeaderDisplayed() throws InterruptedException {
+		log.info("Flights page waiting");
+		Thread.sleep(2000);
 		return driver.getCurrentUrl().contains("Search");
 	}
 }
