@@ -7,16 +7,20 @@ import org.openqa.selenium.support.PageFactory;
 import com.spicejet.base.TestBase;
 
 public class FlightsPage extends TestBase{
-	@FindBy(xpath = "//div[@data-testid='search-page-header']")
+	@FindBy(xpath = "//div[contains(normalize-space(),'Select your')]")
 	WebElement searchPageHeader;
 	
 	public FlightsPage() {
 		PageFactory.initElements(driver, this);
 	}
 	
-	public boolean isFlightHeaderDisplayed() throws InterruptedException {
-		log.info("Flights page waiting");
-		Thread.sleep(2000);
-		return driver.getCurrentUrl().contains("Search");
+	public void isFlightHeaderDisplayed() throws InterruptedException {
+		try {
+			waitForVisibility(searchPageHeader);
+			log.info("Search page header visible!");
+		} catch (Exception e) {
+			log.error("Searh page error not visible");
+			throw e;
+		}
 	}
 }

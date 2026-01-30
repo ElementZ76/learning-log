@@ -41,12 +41,12 @@ public class SpicejetStepDef extends TestBase{
 	}
 	
 	@Then ("I should be navigated to the flight selection page") 
-	public void i_should_be_navigated_to_the_flight_selection_page() {
+	public void i_should_be_navigated_to_the_flight_selection_page() throws Exception {
 		try {
-			Assert.assertTrue(flightsPage.isFlightHeaderDisplayed(), "Flight Search Page was not displayed!");
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			flightsPage.isFlightHeaderDisplayed();
+		} catch (Exception e) {
+			log.error("final did not work");
+			throw e;
 		}
 	}
 }
