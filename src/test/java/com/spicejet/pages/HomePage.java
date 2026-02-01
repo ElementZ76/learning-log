@@ -54,7 +54,9 @@ public class HomePage extends TestBase {
 //			date = String.valueOf(java.time.LocalDate.now().getDayOfMonth());
 //		}
 		
-		String dynamicXpath = "//div[contains(@class, 'css-76zvg2') and contains(., '" + date + "')]";
+		String dynamicXpath = "//div[@data-testid='undefined-calendar-picker']" +
+                "//div[contains(@class, 'css-76zvg2') and text()='" + date + "' " +
+                "and not(contains(@class, 'disabled'))]";
 		
 //		try {
 //			waitForVisibility(calendarContainer);
@@ -77,7 +79,7 @@ public class HomePage extends TestBase {
 		
 		try {
 			// Wait for calendar to be visible first
-			wait.until(ExpectedConditions.visibilityOf(calendarContainer));
+			waitForVisibility(calendarContainer);
 			log.info("Calendar is visible");
 			
 			// Find and click the date
@@ -90,8 +92,8 @@ public class HomePage extends TestBase {
 			
 			// Method 1: Press ESC key to close calendar
 			Actions actions = new Actions(driver);
-			actions.sendKeys(Keys.ENTER).perform();
-			log.info("Pressed ESC to close calendar");
+			actions.sendKeys(Keys.ESCAPE).perform();
+			log.info("Pressed ENTER to close calendar");
 			
 			// Wait a bit for calendar to close
 			Thread.sleep(800);
